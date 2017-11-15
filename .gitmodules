@@ -1,0 +1,3 @@
+[submodule "Assets/NativePluginBuilder"]
+	path = Assets/NativePluginBuilder
+	url = https://github.com/iBicha/NativePluginBuilder
