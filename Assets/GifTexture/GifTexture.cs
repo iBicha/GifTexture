@@ -101,10 +101,10 @@ public class GifTexture
     {
         while (true)
         {
-            GifFrame frame = gif.Frames[index];
             gif.UpdateTexture(index);
             
-            yield return new WaitForSeconds(frame.Delay / 100f);
+            yield return new WaitForSeconds(gif.Frames[index].Delay / 100f);
+
             if (loop || index < gif.Frames.Count - 1)
             {
                 index = (index + 1) % gif.Frames.Count;
