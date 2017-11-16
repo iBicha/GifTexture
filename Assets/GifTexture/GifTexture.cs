@@ -66,7 +66,7 @@ public class GifTexture
         }
     }
 
-    public float duration {
+    public float Duration {
         get
         {
             float dur = 0f;
