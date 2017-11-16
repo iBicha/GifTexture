@@ -32,6 +32,7 @@ public class GifTexture
         {
             throw new System.Exception("Could not decode gif");
         }
+        SetFirstFrame();
     }
 
     public GifTexture(byte[] buffer)
@@ -41,6 +42,7 @@ public class GifTexture
         {
             throw new System.Exception("Could not decode gif");
         }
+        SetFirstFrame();
     }
 
     public bool UseRealtime { get; set; }
@@ -94,7 +96,10 @@ public class GifTexture
     {
         if (!isPlaying)
         {
-            Pause();
+            if (index == gif.Frames.Count -1)
+            {
+                index = 0;
+            }
             Host.StartCoroutine(coroutine = CycleGif());
             isPlaying = true;
         }
@@ -103,7 +108,7 @@ public class GifTexture
     public void Stop()
     {
         Pause();
-        index = 0;
+        SetFirstFrame();
     }
 
     IEnumerator CycleGif()
@@ -132,6 +137,15 @@ public class GifTexture
         isPlaying = false;
     }
 
+
+    void SetFirstFrame()
+    {
+        if(gif.Frames.Count > 0)
+        {
+            index = 0;
+            gif.UpdateTexture(index);
+        }
+    }
     static public implicit operator Texture(GifTexture gifTexture)
     {
         if(gifTexture == null || gifTexture.gif == null)
