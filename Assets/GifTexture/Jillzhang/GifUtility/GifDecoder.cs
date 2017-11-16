@@ -147,18 +147,42 @@ namespace Jillzhang.GifUtility
         internal static GifImage Decode(string gifPath)
         {
             FileStream fs=null;
-            StreamHelper streamHelper=null;
-            GifImage gifImage = new GifImage();
-            List<GraphicEx> graphics = new List<GraphicEx>();        
-            int frameCount = 0;
+            GifImage gifImage = null;
             try
             {
                 fs = new FileStream(gifPath,FileMode.Open);
-                streamHelper = new StreamHelper(fs);
+                gifImage = Decode(fs);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                fs.Close();
+            }
+            return gifImage;
+        }
+
+        internal static GifImage Decode(byte[] buffer)
+        {
+            MemoryStream memoryStream = new MemoryStream(buffer);
+            return Decode(memoryStream);
+        }
+
+        internal static GifImage Decode(Stream stream)
+        {
+            StreamHelper streamHelper = null;
+            GifImage gifImage = new GifImage();
+            List<GraphicEx> graphics = new List<GraphicEx>();
+            int frameCount = 0;
+            try
+            {
+                streamHelper = new StreamHelper(stream);
                 //读取文件头
                 gifImage.Header = streamHelper.ReadString(6);
                 //读取逻辑屏幕标示符
-                gifImage.LogicalScreenDescriptor = streamHelper.GetLCD(fs);  
+                gifImage.LogicalScreenDescriptor = streamHelper.GetLCD(stream);
                 if (gifImage.LogicalScreenDescriptor.GlobalColorTableFlag)
                 {
                     //读取全局颜色列表
@@ -169,7 +193,7 @@ namespace Jillzhang.GifUtility
                 {
                     if (nextFlag == GifExtensions.ImageLabel)
                     {
-                        ReadImage(streamHelper, fs, gifImage, graphics, frameCount);
+                        ReadImage(streamHelper, stream, gifImage, graphics, frameCount);
                         frameCount++;
                     }
                     else if (nextFlag == GifExtensions.ExtensionIntroducer)
@@ -179,25 +203,25 @@ namespace Jillzhang.GifUtility
                         {
                             case GifExtensions.GraphicControlLabel:
                                 {
-                                    GraphicEx graphicEx = streamHelper.GetGraphicControlExtension(fs);
+                                    GraphicEx graphicEx = streamHelper.GetGraphicControlExtension(stream);
                                     graphics.Add(graphicEx);
                                     break;
                                 }
                             case GifExtensions.CommentLabel:
                                 {
-                                    CommentEx comment = streamHelper.GetCommentEx(fs);
+                                    CommentEx comment = streamHelper.GetCommentEx(stream);
                                     gifImage.CommentExtensions.Add(comment);
                                     break;
                                 }
                             case GifExtensions.ApplicationExtensionLabel:
                                 {
-                                    ApplicationEx applicationEx = streamHelper.GetApplicationEx(fs);
+                                    ApplicationEx applicationEx = streamHelper.GetApplicationEx(stream);
                                     gifImage.ApplictionExtensions.Add(applicationEx);
                                     break;
                                 }
                             case GifExtensions.PlainTextLabel:
                                 {
-                                    PlainTextEx textEx = streamHelper.GetPlainTextEx(fs);
+                                    PlainTextEx textEx = streamHelper.GetPlainTextEx(stream);
                                     gifImage.PlainTextEntensions.Add(textEx);
                                     break;
                                 }
@@ -219,10 +243,10 @@ namespace Jillzhang.GifUtility
             }
             finally
             {
-                fs.Close();
+                stream.Close();
             }
             return gifImage;
-        }     
+        }
         #endregion    
     }
     #endregion

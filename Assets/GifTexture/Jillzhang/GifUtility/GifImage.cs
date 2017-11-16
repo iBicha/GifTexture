@@ -50,7 +50,7 @@ namespace Jillzhang.GifUtility
             set { _tex2D = value; }
         }
 
-        public Texture2D GetTexture(int frameIndex)
+        internal void UpdateTexture(int frameIndex)
         {
             if(frameIndex < 0 || frameIndex >= frames.Count)
             {
@@ -58,7 +58,6 @@ namespace Jillzhang.GifUtility
             }
             _tex2D.SetPixels32(frames[frameIndex].ColorBuffer);
             _tex2D.Apply();
-            return _tex2D;
         }
 
         #region ±³¾°Í¼Æ¬µÄ³¤¶È 
