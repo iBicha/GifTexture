@@ -119,6 +119,10 @@ public class GifTexture
 
     static public implicit operator Texture(GifTexture gifTexture)
     {
+        if(gifTexture == null || gifTexture.gif == null)
+        {
+            return null;
+        }
         return gifTexture.gif.Texture;
     }
 
