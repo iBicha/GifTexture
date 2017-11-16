@@ -43,6 +43,9 @@ public class GifTexture
         }
     }
 
+    public bool UseRealtime { get; set; }
+
+    private IEnumerator coroutine;
     private bool isPlaying;
     public bool IsPlaying
     {
@@ -80,15 +83,21 @@ public class GifTexture
 
     public void Pause()
     {
-        Host.StopCoroutine(CycleGif());
-        isPlaying = false;
+        if (isPlaying)
+        {
+            Host.StopCoroutine(coroutine);
+            isPlaying = false;
+        }
     }
 
     public void Play()
     {
-        Pause();
-        Host.StartCoroutine(CycleGif());
-        isPlaying = true;
+        if (!isPlaying)
+        {
+            Pause();
+            Host.StartCoroutine(coroutine = CycleGif());
+            isPlaying = true;
+        }
     }
 
     public void Stop()
@@ -102,8 +111,14 @@ public class GifTexture
         while (true)
         {
             gif.UpdateTexture(index);
-            
-            yield return new WaitForSeconds(gif.Frames[index].Delay / 100f);
+            if (UseRealtime)
+            {
+                yield return new WaitForSecondsRealtime(gif.Frames[index].Delay / 100f);
+            }
+            else
+            {
+                yield return new WaitForSeconds(gif.Frames[index].Delay / 100f);
+            }
 
             if (loop || index < gif.Frames.Count - 1)
             {
