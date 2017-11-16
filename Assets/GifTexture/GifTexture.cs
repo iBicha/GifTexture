@@ -47,7 +47,7 @@ public class GifTexture
 
     public bool UseRealtime { get; set; }
 
-    private IEnumerator coroutine;
+    private Coroutine coroutine;
     private bool isPlaying;
     public bool IsPlaying
     {
@@ -100,7 +100,7 @@ public class GifTexture
             {
                 index = 0;
             }
-            Host.StartCoroutine(coroutine = CycleGif());
+            coroutine = Host.StartCoroutine(CycleGif());
             isPlaying = true;
         }
     }
