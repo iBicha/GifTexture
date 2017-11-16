@@ -44,7 +44,7 @@ namespace Jillzhang.GifUtility
     {
         #region private fields
         private ImageDescriptor _imgDes;
-        private Texture2D _img;
+        private UnityEngine.Color32[] _colorBuffer;
         private int _colorSize = 3;
         private byte[] _lct;
         private GraphicEx _graphicEx;
@@ -96,12 +96,12 @@ namespace Jillzhang.GifUtility
         /// <summary>
         /// 图像
         /// </summary>
-        internal Texture2D Image
+        internal UnityEngine.Color32[] ColorBuffer
         {
-            get { return _img; }
-            set { _img = value; }
+            get { return _colorBuffer; }
+            set { _colorBuffer = value; }
         }
-        
+
         /// <summary>
         /// 数据位大小
         /// </summary>

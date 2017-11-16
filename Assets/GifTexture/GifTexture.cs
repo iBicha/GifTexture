@@ -9,23 +9,23 @@ public class GifTexture : MonoBehaviour
 
     public Renderer Renderer;
 
-    GifImage gif;
-    int index = 0;
-    // Use this for initialization
+     // Use this for initialization
     void Start()
     {
-        gif = GifDecoder.Decode("Assets/demo.gif");
-        StartCoroutine(CycleGif());
+        GifImage gif = GifDecoder.Decode("Assets/demo.gif");
+        Renderer.material.mainTexture = gif.Texture;
+        StartCoroutine(CycleGif(gif));
 
     }
 
 
-    IEnumerator CycleGif()
+    IEnumerator CycleGif(GifImage gif)
     {
+        int index = 0;
         while (true)
         {
             GifFrame frame = gif.Frames[index];
-            Renderer.material.mainTexture = frame.Image;
+            gif.GetTexture(index);
             index = (index + 1) % gif.Frames.Count;
             yield return new WaitForSeconds(frame.Delay / 100f);
         }

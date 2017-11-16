@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Collections;
+using UnityEngine;
 
 namespace Jillzhang.GifUtility
 {
@@ -41,6 +42,25 @@ namespace Jillzhang.GifUtility
     /// </summary>
     internal class GifImage
     {
+
+        private Texture2D _tex2D;
+        internal Texture2D Texture
+        {
+            get { return _tex2D; }
+            set { _tex2D = value; }
+        }
+
+        public Texture2D GetTexture(int frameIndex)
+        {
+            if(frameIndex < 0 || frameIndex >= frames.Count)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            _tex2D.SetPixels32(frames[frameIndex].ColorBuffer);
+            _tex2D.Apply();
+            return _tex2D;
+        }
+
         #region 背景图片的长度 
         /// <summary>
         /// 背景图片的长度

@@ -60,90 +60,82 @@ namespace Jillzhang.GifUtility
             byte[] piexel = lzwDecoder.DecodeImageData(imgDes.Width, imgDes.Height, dataSize);
             frame.IndexedPixel = piexel;
             int blockSize = streamHelper.Read();
-            DataStruct data = new DataStruct(blockSize, fs);         
+            //DataStruct data = new DataStruct(blockSize, fs);
+            new DataStruct(blockSize, fs);
             GraphicEx graphicEx = graphics[frameCount];
             frame.GraphicExtension = graphicEx;
-            Texture2D tex = GetTextureFromPixel(piexel, frame.Palette, imgDes.InterlaceFlag, imgDes.Width, imgDes.Height);
-            frame.Image = tex;          
+            frame.ColorBuffer = GetColorBufferFromPixel(piexel, frame.Palette, imgDes.InterlaceFlag, imgDes.Width, imgDes.Height);
             gifImage.Frames.Add(frame);
         }
-        static Texture2D GetTextureFromPixel(byte[] pixel, Color32[] colorTable, bool interlactFlag, int iw, int ih)
+        static UnityEngine.Color32[] GetColorBufferFromPixel(byte[] pixel, Color32[] colorTable, bool interlactFlag, int iw, int ih)
         {
-            Texture2D tex2D = new Texture2D(iw, ih, TextureFormat.ARGB32, false);
-            UnityEngine.Color32[] buffer32 = tex2D.GetPixels32();
+            UnityEngine.Color32[] buffer32 = new UnityEngine.Color32[iw * ih];
             int buffer32Index = 0;
-            unsafe
+            int tempBuffer32Index = buffer32Index;
+            int offSet = 0;
+            if (interlactFlag)
             {
-                Color32* p = null; // (Color32*)bmpData.Scan0.ToPointer();
-                Color32* tempPointer = p;
-                int offSet = 0;
-                if (interlactFlag)
+                #region 交织存储模式
+                int i = 0;
+                int pass = 0;//当前通道            
+                while (pass < 4)
                 {
-                    throw new System.NotSupportedException();
-                    #region 交织存储模式
-                    int i = 0;
-                    int pass = 0;//当前通道            
-                    while (pass < 4)
+                    //总共有4个通道
+                    if (pass == 1)
                     {
-                        //总共有4个通道
-                        if (pass == 1)
+                        buffer32Index = tempBuffer32Index;
+                        buffer32Index += (4 * iw );
+                        offSet += 4 * iw;
+                    }
+                    else if (pass == 2)
+                    {
+                        buffer32Index = tempBuffer32Index;
+                        buffer32Index += (2 * iw );
+                        offSet += 2 * iw;
+                    }
+                    else if (pass == 3)
+                    {
+                        buffer32Index = tempBuffer32Index;
+                        buffer32Index += (1 * iw);
+                        offSet += 1 * iw;
+                    }
+                    int rate = 2;
+                    if (pass == 0 | pass == 1)
+                    {
+                        rate = 8;
+                    }
+                    else if (pass == 2)
+                    {
+                        rate = 4;
+                    }
+                    while (i < pixel.Length)
+                    {
+                        buffer32[buffer32Index++] = colorTable[pixel[i++]].UnityColor32;                          
+                        offSet++;
+                        if (i % (iw) == 0)
                         {
-                            p = tempPointer;
-                            p += (4 * iw );
-                            offSet += 4 * iw;
-                        }
-                        else if (pass == 2)
-                        {
-                            p = tempPointer;
-                            p += (2 * iw );
-                            offSet += 2 * iw;
-                        }
-                        else if (pass == 3)
-                        {
-                            p = tempPointer;
-                            p += (1 * iw);
-                            offSet += 1 * iw;
-                        }
-                        int rate = 2;
-                        if (pass == 0 | pass == 1)
-                        {
-                            rate = 8;
-                        }
-                        else if (pass == 2)
-                        {
-                            rate = 4;
-                        }
-                        while (i < pixel.Length)
-                        {                         
-                            *p++ = colorTable[pixel[i++]];                          
-                            offSet++;
-                            if (i % (iw) == 0)
+                            buffer32Index += (iw * (rate - 1));
+                            offSet += (iw * (rate - 1));
+                            if ( offSet  >= pixel.Length)
                             {
-                                p += (iw * (rate - 1));
-                                offSet += (iw * (rate - 1));
-                                if ( offSet  >= pixel.Length)
-                                {
-                                    pass++;
-                                    offSet = 0;
-                                    break;
-                                }                               
-                            }                        
-                        }
+                                pass++;
+                                offSet = 0;
+                                break;
+                            }                               
+                        }                        
                     }
-                    #endregion
                 }
-                else
+                #endregion
+            }
+            else
+            {
+                int i = 0;
+                for (i = 0; i < pixel.Length; )
                 {
-                    int i = 0;
-                    for (i = 0; i < pixel.Length; )
-                    {
-                        buffer32[buffer32Index++] = colorTable[pixel[i++]].UnityColor32;   
-                    }
+                    buffer32[buffer32Index++] = colorTable[pixel[i++]].UnityColor32;   
                 }
             }
-            tex2D.SetPixels32(buffer32);
-            tex2D.Apply(); 
-            return tex2D;
+            return buffer32;
         }
         #endregion
 
@@ -218,6 +210,8 @@ namespace Jillzhang.GifUtility
                     }
                     nextFlag = streamHelper.Read();
                 }
+
+                gifImage.Texture = new Texture2D(gifImage.Width, gifImage.Height, TextureFormat.ARGB32, false);
             }
             catch
             {
